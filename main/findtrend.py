@@ -122,4 +122,9 @@ class FindTrend(object):
             elif low[i-1] > low[i] and low[i] < low[i+1]:
                 self._trend_bottom(low, i)
 
-        return self._high_stack, self._low_stack
+        high_point = high[self._high_stack]
+        low_point = low[self._low_stack]
+        point = pd.concat([high_point, low_point], axis=0) 
+        point.sort_index(inplace=True)
+
+        return point
