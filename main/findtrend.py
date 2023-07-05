@@ -1,6 +1,6 @@
 import pandas as pd 
 from typing import Tuple, List
-from ..utils.check import TypeChecker
+from utils.check import TypeChecker
 
 
 # TODO: 可否再精简一下逻辑

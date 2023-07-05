@@ -1,6 +1,6 @@
 import pandas as pd
 from typing import Tuple
-from ..utils.check import TypeChecker
+from utils.check import TypeChecker
 
 
 class CombineKLine(object):
@@ -74,43 +74,45 @@ class CombineKLine(object):
         Returns:
             Tuple[pd.Series, pd.Series]: 合并后的最大值和最小值序列
         """
-        # TODO: 反复检查一下逻辑，特别是取等号的时候
-        # TODO: 判断标准化？
 
         # 循环序列开始合并K线
-        pointer = 0
+        pointer = 1
         while pointer < len(high)-2:
 
+            cond0 = high[pointer] <= high[pointer + 2]
             cond1 = high[pointer] <= high[pointer + 1]
             cond2 = high[pointer + 1] <= high[pointer + 2]
+            
             cond3 = low[pointer] <= low[pointer + 1]
             cond4 = low[pointer + 1] <= low[pointer + 2]
-            cond5 = low[pointer] >= low[pointer + 2]
-            cond6 = high[pointer - 1] >= high[pointer]
-            cond7 = low[pointer - 1] >= low[pointer] 
-            cond8 = high[pointer] <= high[pointer + 2]
+            cond5 = low[pointer] <= low[pointer + 2]
+            
+            cond6 = high[pointer - 1] <= high[pointer]
+            cond7 = low[pointer - 1] <= low[pointer]
+                 
 
             if cond1 and cond3:
                 if not cond2 and cond4:
                     self._upward_trend(high, low, pointer+1, method='first')
                     continue
                 elif cond2 and not cond4:
-                    if pointer >= 1:
-                        if cond5 and cond6 and cond7:
-                            self._downward_trend(high, low, pointer+1, method='last')
-                            continue
-                    self._upward_trend(high, low, pointer+1, method='last')
-                    continue
+                    if not cond5 and not cond6 and not cond7:
+                        self._downward_trend(high, low, pointer+1, method='last')
+                        continue
+                    else:
+                        self._upward_trend(high, low, pointer+1, method='last')
+                        continue
             elif not cond1 and not cond3:
                 if not cond2 and cond4:
                     self._downward_trend(high, low, pointer+1, method='first')
                     continue
                 elif cond2 and not cond4:
-                    if pointer >= 1:
-                        if cond8 and not cond6 and not cond7:
-                            self._upward_trend(high, low, pointer+1, method='last')
-                            continue
-                    self._downward_trend(high, low, pointer+1, method='last')
-                    continue
+                    if cond0 and cond6 and cond7:
+                        self._upward_trend(high, low, pointer+1, method='last')
+                        continue
+                    else:
+                        self._downward_trend(high, low, pointer+1, method='last')
+                        continue
             pointer += 1
         return high, low
+
