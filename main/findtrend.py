@@ -11,14 +11,17 @@ class FindTrend(object):
     """
 
     def __init__(self) -> None:
-
-        self._high_stack = []
-        self._low_stack = []
-        self._high_invalid = []
-        self._low_invalid = []
+        self._high_stack = []  # 保存笔顶点的位置
+        self._low_stack = []  # 保存笔底点的位置
+        self._high_invalid = []  # 保存无效的笔顶点位置
+        self._low_invalid = []  # 保存无效的笔底点位置
 
     def _top(self, high: pd.Series, i: int) -> None:
-        """_summary_
+        """
+        寻找笔的顶点
+        -----------------------------------------------------------------
+        顶分型和底分型之间至少有多余的一根k线
+        构成底分型的k线没有破坏顶分型
 
         Args:
             high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex
@@ -37,7 +40,11 @@ class FindTrend(object):
             self._high_invalid.append(i)
 
     def _bottom(self, low: pd.Series, i: int) -> None:
-        """_summary_
+        """
+        寻找笔的底点
+        -----------------------------------------------------------------
+        底分型和顶分型分型之间至少有多余的一根k线
+        构成顶分型的k线没有破坏底分型
 
         Args:
             low (pd.Series): 最低价序列,index类型必须为pd.DatetimeIndex
@@ -57,7 +64,8 @@ class FindTrend(object):
 
 
     def _trend_top(self, high: pd.Series, i: int) -> None:
-        """_summary_
+        """
+        将高点加入笔的顶点序列
 
         Args:
             high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex
@@ -81,7 +89,8 @@ class FindTrend(object):
                 self._top(high,i)
 
     def _trend_bottom(self, low: pd.Series, i: int) -> None:
-        """_summary_
+        """
+        将低点加入笔的底点序列
 
         Args:
             low (pd.Series): 最低价序列,index类型必须为pd.DatetimeIndex
@@ -106,7 +115,8 @@ class FindTrend(object):
 
     @TypeChecker.datetime_index_check
     def find_trend(self, high: pd.Series, low: pd.Series) -> Tuple[List[int], List[int]]:
-        """_summary_
+        """
+        寻找笔的顶点和底点
 
         Args:
             high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex

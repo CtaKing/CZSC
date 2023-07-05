@@ -84,29 +84,29 @@ class CombineKLine(object):
             cond2 = high[pointer + 1] <= high[pointer + 2]
             
             cond3 = low[pointer] <= low[pointer + 1]
-            cond4 = low[pointer + 1] <= low[pointer + 2]
-            cond5 = low[pointer] <= low[pointer + 2]
+            cond4 = low[pointer] <= low[pointer + 2]
+            cond5 = low[pointer + 1] <= low[pointer + 2]
             
             cond6 = high[pointer - 1] <= high[pointer]
             cond7 = low[pointer - 1] <= low[pointer]
                  
 
             if cond1 and cond3:
-                if not cond2 and cond4:
+                if not cond2 and cond5:
                     self._upward_trend(high, low, pointer+1, method='first')
                     continue
-                elif cond2 and not cond4:
-                    if not cond5 and not cond6 and not cond7:
+                elif cond2 and not cond5:
+                    if not cond4 and not cond6 and not cond7:
                         self._downward_trend(high, low, pointer+1, method='last')
                         continue
                     else:
                         self._upward_trend(high, low, pointer+1, method='last')
                         continue
             elif not cond1 and not cond3:
-                if not cond2 and cond4:
+                if not cond2 and cond5:
                     self._downward_trend(high, low, pointer+1, method='first')
                     continue
-                elif cond2 and not cond4:
+                elif cond2 and not cond5:
                     if cond0 and cond6 and cond7:
                         self._upward_trend(high, low, pointer+1, method='last')
                         continue
