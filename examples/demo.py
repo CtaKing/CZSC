@@ -8,6 +8,7 @@ sys.path.append(os.getcwd() + "/..")
 
 
 df = pd.read_csv('data.csv')
+print(df.dtypes)
 low = df['low']
 high = df['high']
 cbk = CombineKLine()
