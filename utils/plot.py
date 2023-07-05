@@ -115,6 +115,5 @@ class KlineChart:
 
         )
 
-
-        return grid.render_notebook()
+        return grid.render()
 
