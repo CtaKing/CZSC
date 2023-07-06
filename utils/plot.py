@@ -86,13 +86,15 @@ class KlineChart:
                 legend_opts=opts.LegendOpts(is_show=False)
             )
         )
-
-
+        macd_hist = self.df['hist'].values.tolist()
+        macd_hist_red = [v if v > 0 else 0 for v in macd_hist]
+        macd_hist_green = [v if v < 0 else 0 for v in macd_hist]
         # 创建一个柱状图表示MACD Hist
         self._bar = (
             Bar()
             .add_xaxis(self.df.index.tolist())
-            .add_yaxis("Hist", self.df['hist'].values.tolist(), label_opts=opts.LabelOpts(is_show=False))
+            .add_yaxis("Hist_Red", macd_hist_red, stack="stack1", color="#c23531", label_opts=opts.LabelOpts(is_show=False))
+            .add_yaxis("Hist_Green", macd_hist_green, stack="stack2", color="#008000", label_opts=opts.LabelOpts(is_show=False))
             .set_global_opts(
                 legend_opts=opts.LegendOpts(is_show=False),
             )
