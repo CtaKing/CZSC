@@ -16,7 +16,7 @@ class FindTrend(object):
         self._high_invalid = []  # 保存无效的笔顶点位置
         self._low_invalid = []  # 保存无效的笔底点位置
 
-    def _top(self, high: pd.Series, i: int) -> None:
+    def _top(self, high: pd.Series, low: pd.Series, i: int) -> None:
         """
         寻找笔的顶点
         -----------------------------------------------------------------
@@ -25,9 +25,10 @@ class FindTrend(object):
 
         Args:
             high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex
+            low (pd.Series): 最低价序列,index类型必须为pd.DatetimeIndex
             i (int): 指针，定位K线的位置
         """
-        if i - self._low_stack[-1] >= 4 and high[self._low_stack[-1]-1] < high[i] and high[self._low_stack[-1]+1] < high[i]:
+        if i - self._low_stack[-1] >= 4 and low[self._low_stack[-1]] < low[i + 1]:
             if len(self._high_invalid) == 0:
                 self._high_stack.append(i)
             else:
@@ -39,7 +40,7 @@ class FindTrend(object):
         else:
             self._high_invalid.append(i)
 
-    def _bottom(self, low: pd.Series, i: int) -> None:
+    def _bottom(self, high: pd.Series, low: pd.Series, i: int) -> None:
         """
         寻找笔的底点
         -----------------------------------------------------------------
@@ -47,14 +48,15 @@ class FindTrend(object):
         构成顶分型的k线没有破坏底分型
 
         Args:
+            high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex
             low (pd.Series): 最低价序列,index类型必须为pd.DatetimeIndex
             i (int): 指针，定位K线的位置
         """
-        if i - self._high_stack[-1] >= 4 and low[self._high_stack[-1]-1] > low[i] and low[self._high_stack[-1]+1] > low[i]:
+        if i - self._high_stack[-1] >= 4 and high[self._high_stack[-1]] > high[i + 1]:
             if len(self._low_invalid) == 0:
                 self._low_stack.append(i)
             else:
-                if self._low_invalid[-1] > self._high_stack[-1]:
+                if self._low_invalid[-1] < self._high_stack[-1]:
                     self._low_stack.append(i)
                 else:
                     if low[self._low_invalid[-1]] >= low[i]:
@@ -63,12 +65,13 @@ class FindTrend(object):
             self._low_invalid.append(i)
 
 
-    def _trend_top(self, high: pd.Series, i: int) -> None:
-        """
+    def _trend_top(self, high: pd.Series, low: pd.Series, i: int) -> None:
+        """_summary_
         将高点加入笔的顶点序列
 
         Args:
             high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex
+            low (pd.Series): 最低价序列,index类型必须为pd.DatetimeIndex
             i (int): 指针，定位K线的位置
         """
         if len(self._high_stack) == 0 and len(self._low_stack) == 0:
@@ -80,19 +83,20 @@ class FindTrend(object):
                     self._high_stack.append(i)
             elif len(self._high_stack) == len(self._low_stack):
                 if self._high_stack[0] < self._low_stack[0]:
-                    self._top(high,i)
+                    self._top(high,low,i)
                 else:
                     if high[self._high_stack[-1]] <= high[i]:
                         self._high_stack.pop()
                         self._high_stack.append(i)
             else:
-                self._top(high,i)
+                self._top(high,low,i)
 
-    def _trend_bottom(self, low: pd.Series, i: int) -> None:
+    def _trend_bottom(self, high: pd.Series, low: pd.Series, i: int) -> None:
         """
         将低点加入笔的底点序列
 
         Args:
+            high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex
             low (pd.Series): 最低价序列,index类型必须为pd.DatetimeIndex
             i (int): 指针，定位K线的位置
         """
@@ -105,16 +109,16 @@ class FindTrend(object):
                     self._low_stack.append(i)
             elif len(self._low_stack) == len(self._high_stack):
                 if self._low_stack[0] < self._high_stack[0]:
-                    self._bottom(low,i)
+                    self._bottom(high,low,i)
                 else:
                     if low[self._low_stack[-1]] >= low[i]:
                         self._low_stack.pop()
                         self._low_stack.append(i)
             else:
-                self._bottom(low,i)
+                self._bottom(high,low,i)
 
     @TypeChecker.datetime_index_check
-    def find_trend(self, high: pd.Series, low: pd.Series) -> Tuple[List[int], List[int]]:
+    def find_trend(self, high: pd.Series, low: pd.Series) -> pd.Series:
         """
         寻找笔的顶点和底点
 
@@ -127,10 +131,10 @@ class FindTrend(object):
         """
         n = len(high)
         for i in range(1, n-1):
-            if high[i-1] < high[i] and high[i] > high[i+1]:
-                self._trend_top(high, i)
-            elif low[i-1] > low[i] and low[i] < low[i+1]:
-                self._trend_bottom(low, i)
+            if low[i-1] < low[i] and low[i] > low[i+1] and high[i-1] < high[i] and high[i] > high[i+1]:
+                self._trend_top(high,low, i)
+            elif low[i-1] > low[i] and low[i] < low[i+1] and high[i-1] > high[i] and high[i] < high[i-1]:
+                self._trend_bottom(high,low, i)
 
         high_point = high[self._high_stack]
         low_point = low[self._low_stack]

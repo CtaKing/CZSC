@@ -62,7 +62,7 @@ class CombineKLine(object):
             high.at[high.index[pointer + 1]] = high[pointer]
             low.drop(low.index[pointer], inplace=True)
             high.drop(high.index[pointer], inplace=True)
-    
+
     @TypeChecker.datetime_index_check
     def combine_K_line(self, high: pd.Series, low: pd.Series) -> Tuple[pd.Series, pd.Series]:
         """
@@ -79,40 +79,44 @@ class CombineKLine(object):
         pointer = 1
         while pointer < len(high)-2:
 
-            cond0 = high[pointer] <= high[pointer + 2]
-            cond1 = high[pointer] <= high[pointer + 1]
-            cond2 = high[pointer + 1] <= high[pointer + 2]
-            
-            cond3 = low[pointer] <= low[pointer + 1]
-            cond4 = low[pointer] <= low[pointer + 2]
-            cond5 = low[pointer + 1] <= low[pointer + 2]
-            
-            cond6 = high[pointer - 1] <= high[pointer]
-            cond7 = low[pointer - 1] <= low[pointer]
-                 
+            # cond0 = high[pointer] <= high[pointer + 2]
+            # cond1 = high[pointer] <= high[pointer + 1]
+            # cond2 = high[pointer + 1] <= high[pointer + 2]
 
-            if cond1 and cond3:
-                if not cond2 and cond5:
+            # cond3 = low[pointer] <= low[pointer + 1]
+            # cond4 = low[pointer] <= low[pointer + 2]
+            # cond5 = low[pointer + 1] <= low[pointer + 2]
+
+            # cond6 = high[pointer - 1] <= high[pointer]
+            # cond7 = low[pointer - 1] <= low[pointer]
+
+            if high[pointer] < high[pointer + 1] and low[pointer] < low[pointer + 1]:
+                if high[pointer + 1] >= high[pointer + 2] and low[pointer + 1] <= low[pointer + 2]:
                     self._upward_trend(high, low, pointer+1, method='first')
                     continue
-                elif cond2 and not cond5:
-                    if not cond4 and not cond6 and not cond7:
-                        self._downward_trend(high, low, pointer+1, method='last')
+                elif high[pointer + 1] <= high[pointer + 2] and low[pointer + 1] >= low[pointer + 2]:
+                    if low[pointer] >= low[pointer + 2] and high[pointer - 1] > high[pointer] and low[pointer - 1] > low[pointer]:
+                        self._downward_trend(
+                            high, low, pointer+1, method='last')
+                        pointer -= 1
                         continue
                     else:
                         self._upward_trend(high, low, pointer+1, method='last')
                         continue
-            elif not cond1 and not cond3:
-                if not cond2 and cond5:
+            elif high[pointer] > high[pointer + 1] and low[pointer] > low[pointer + 1]:
+                if high[pointer + 1] >= high[pointer + 2] and low[pointer + 1] <= low[pointer + 2]:
                     self._downward_trend(high, low, pointer+1, method='first')
                     continue
-                elif cond2 and not cond5:
-                    if cond0 and cond6 and cond7:
+                elif high[pointer + 1] <= high[pointer + 2] and low[pointer + 1] >= low[pointer + 2]:
+                    if high[pointer] <= high[pointer + 2] and high[pointer - 1] < high[pointer] and low[pointer - 1] < low[pointer]:
                         self._upward_trend(high, low, pointer+1, method='last')
+                        pointer -= 1
                         continue
                     else:
-                        self._downward_trend(high, low, pointer+1, method='last')
+                        self._downward_trend(
+                            high, low, pointer+1, method='last')
                         continue
             pointer += 1
         return high, low
+
 
