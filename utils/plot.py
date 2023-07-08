@@ -102,6 +102,7 @@ class KlineChart:
         self._line_macd.overlap(self._bar)
 
 
+
     def plot(self):
         
         self.kline()

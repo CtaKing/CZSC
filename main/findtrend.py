@@ -81,6 +81,12 @@ class FindTrend(object):
                 if high[self._high_stack[-1]] <= high[i]:
                     self._high_stack.pop()
                     self._high_stack.append(i)
+                    if self._low_stack:
+                        slice = low[self._low_stack[-1]:i+1]
+                        min_index_label_slice = slice.idxmin()
+                        min_index_slice = low.index.get_loc(min_index_label_slice)
+                        self._low_stack.pop()
+                        self._low_stack.append(min_index_slice)
             elif len(self._high_stack) == len(self._low_stack):
                 if self._high_stack[0] < self._low_stack[0]:
                     self._top(high,low,i)
@@ -88,6 +94,11 @@ class FindTrend(object):
                     if high[self._high_stack[-1]] <= high[i]:
                         self._high_stack.pop()
                         self._high_stack.append(i)
+                        slice = low[self._low_stack[-1]:i+1]
+                        min_index_label_slice = slice.idxmin()
+                        min_index_slice = low.index.get_loc(min_index_label_slice)
+                        self._low_stack.pop()
+                        self._low_stack.append(min_index_slice)
             else:
                 self._top(high,low,i)
 
@@ -107,6 +118,12 @@ class FindTrend(object):
                 if low[self._low_stack[-1]] >= low[i]:
                     self._low_stack.pop()
                     self._low_stack.append(i)
+                    if self._high_stack:
+                        slice = high[self._high_stack[-1]:i+1]
+                        max_index_label_slice = slice.idxmax()
+                        max_index_slice = high.index.get_loc(max_index_label_slice)
+                        self._high_stack.pop()
+                        self._high_stack.append(max_index_slice)
             elif len(self._low_stack) == len(self._high_stack):
                 if self._low_stack[0] < self._high_stack[0]:
                     self._bottom(high,low,i)
@@ -114,6 +131,11 @@ class FindTrend(object):
                     if low[self._low_stack[-1]] >= low[i]:
                         self._low_stack.pop()
                         self._low_stack.append(i)
+                        slice = high[self._high_stack[-1]:i+1]
+                        max_index_label_slice = slice.idxmax()
+                        max_index_slice = high.index.get_loc(max_index_label_slice)
+                        self._high_stack.pop()
+                        self._high_stack.append(max_index_slice)
             else:
                 self._bottom(high,low,i)
 
