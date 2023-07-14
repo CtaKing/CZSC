@@ -20,10 +20,14 @@ class FindCentre(object):
                 if low_point[i] > self._high_stack[-1]:
                     self._high_stack.pop()
                     self._low_stack.pop()
+                    if high_point.index[0] > low_point.index[0]:
+                        i -= 1
                     continue
                 if high_point[i] < self._low_stack[-1]:
                     self._high_stack.pop()
                     self._low_stack.pop()
+                    if high_point.index[0] < low_point.index[0]:
+                        i -= 1
                     continue
                 if high_point[i] < self._high_stack[-1]:
                     self._high_stack.pop()

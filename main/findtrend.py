@@ -140,7 +140,7 @@ class FindTrend(object):
                 self._bottom(high,low,i)
 
     @TypeChecker.datetime_index_check
-    def find_trend(self, high: pd.Series, low: pd.Series) -> pd.Series:
+    def _find_trend(self, high: pd.Series, low: pd.Series) -> None:
         """
         寻找笔的顶点和底点
 
@@ -158,9 +158,14 @@ class FindTrend(object):
             elif low[i-1] > low[i] and low[i] < low[i+1] and high[i-1] > high[i] and high[i] < high[i-1]:
                 self._trend_bottom(high,low, i)
 
+    
+
+    def find_trend(self,high: pd.Series, low: pd.Series):
+        self._find_trend(high,low)
         high_point = high[self._high_stack]
         low_point = low[self._low_stack]
         point = pd.concat([high_point, low_point], axis=0) 
         point.sort_index(inplace=True)
 
-        return point
+        return point,high_point,low_point
+
