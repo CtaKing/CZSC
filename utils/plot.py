@@ -1,9 +1,9 @@
 import talib
 from pyecharts import options as opts
-from pyecharts.charts import Bar, Kline, Grid, Line
+from pyecharts.charts import Bar, Kline, Grid, Line, Scatter
 
 class KlineChart:
-    def __init__(self,df,point) -> None:
+    def __init__(self,df,point,high_centre,low_centre) -> None:
         self.point = point
         self.df = df
         self.df['macd'], self.df['signal'], self.df['hist'] = talib.MACD(self.df['close'])
@@ -11,6 +11,9 @@ class KlineChart:
         self.x_data = self.df.index.tolist()
         self.y_data = self.df[['open', 'close', 'low', 'high']].values.tolist()
         self.volumes = self.df['volume'].tolist()
+        self.high_centre = high_centre
+        self.low_centre = low_centre
+        
 
 
     def kline(self):
@@ -75,6 +78,31 @@ class KlineChart:
         )
         self._kline.overlap(self._line)
 
+        for i in range(len(self.high_centre)):
+            x1, y1 = self.low_centre.index[i], self.low_centre.values.tolist()[i]
+            x2, y2 = self.low_centre.index[i], self.high_centre.values.tolist()[i]
+            x3, y3 = self.high_centre.index[i], y2
+            x4, y4 = x3, y1
+            self._scatter= (
+                Scatter()
+                .add_xaxis([x1, x2, x3, x4])
+                .add_yaxis('中枢',[y1, y2, y3, y4],label_opts=opts.LabelOpts(is_show=False))
+                    
+                )
+            self._line = (
+                Line()
+                .add_xaxis([x1, x2, x3, x4])
+                .add_yaxis('中枢',[y1, y2, y3, y4],label_opts=opts.LabelOpts(is_show=False))
+                .add_xaxis([x4,x1])
+                .add_yaxis('中枢', [y4,y1],label_opts=opts.LabelOpts(is_show=False))
+            )
+
+
+            self._scatter.overlap(self._line)
+            self._kline.overlap(self._scatter)
+
+        
+
     def MACD(self):
         # 创建一个折线图表示MACD
         self._line_macd = (
@@ -102,9 +130,7 @@ class KlineChart:
         self._line_macd.overlap(self._bar)
 
 
-
     def plot(self):
-        
         self.kline()
         self.MACD()
         grid = (

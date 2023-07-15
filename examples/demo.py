@@ -3,8 +3,7 @@ import os
 sys.path.append(os.getcwd() + "/..")
 
 import pandas as pd
-from main.combinekline import CombineKLine
-from main.findtrend import FindTrend
+from main import combinekline, findtrend, findcentre
 from utils.plot import KlineChart
 
 
@@ -15,9 +14,11 @@ df['date'] = pd.to_datetime(df['date'])
 df = df.set_index('date')
 low = df['low']
 high = df['high']
-cbk = CombineKLine()
+cbk = combinekline.CombineKLine()
 high,low = cbk.combine_K_line(high, low)
-ft = FindTrend()
-point = ft.find_trend(high,low)
-kplot = KlineChart(df,point)
+ft = findtrend.FindTrend()
+point,high_point,low_point = ft.find_trend(high,low)
+fc = findcentre.FindCentre()
+high_centre, low_centre = fc.find_centre(high_point,low_point)
+kplot = KlineChart(df,point,high_centre,low_centre)
 kplot.plot()
