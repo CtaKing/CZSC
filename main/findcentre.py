@@ -7,7 +7,17 @@ class FindCentre(object):
         self._centre_high = []
         self._centre_low = []
 
-    def find_centre(self, high_point, low_point):
+    def find_centre(self, high_point: pd.Series, low_point: pd.Series):
+        """找到中枢的高点和低点
+
+        Args:
+            high_point (pd.Series): 笔高点序列
+            low_point (pd.Series): 笔低点序列
+
+        Returns:
+            pd.Series: 中枢高点序列
+            pd.Series: 中枢低点序列
+        """
         n = min(len(high_point), len(low_point))
         i = 0
         while i < n:
@@ -39,6 +49,6 @@ class FindCentre(object):
                     self._low_stack.append(low_point[i])
                     self._centre_low.pop()
                     self._centre_low.append(low_point[i:i+1])
-            i += 1
+            i +=1
 
-        return pd.concat(self._centre_high),pd.concat(self._centre_low)
+        return pd.concat(self._centre_high), pd.concat(self._centre_low)
