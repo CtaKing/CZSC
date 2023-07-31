@@ -79,17 +79,6 @@ class CombineKLine(object):
         pointer = 1
         while pointer < len(high)-2:
 
-            # cond0 = high[pointer] <= high[pointer + 2]
-            # cond1 = high[pointer] <= high[pointer + 1]
-            # cond2 = high[pointer + 1] <= high[pointer + 2]
-
-            # cond3 = low[pointer] <= low[pointer + 1]
-            # cond4 = low[pointer] <= low[pointer + 2]
-            # cond5 = low[pointer + 1] <= low[pointer + 2]
-
-            # cond6 = high[pointer - 1] <= high[pointer]
-            # cond7 = low[pointer - 1] <= low[pointer]
-
             if high[pointer] < high[pointer + 1] and low[pointer] < low[pointer + 1]:
                 if high[pointer + 1] >= high[pointer + 2] and low[pointer + 1] <= low[pointer + 2]:
                     self._upward_trend(high, low, pointer+1, method='first')
@@ -120,3 +109,51 @@ class CombineKLine(object):
         return high, low
 
 
+class CombineKLineTrade(CombineKLine):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @TypeChecker.datetime_index_check
+    def combine_K_line(self, high: pd.Series, low: pd.Series) -> Tuple[pd.Series, pd.Series]:
+        """
+        针对交易k线合并都合并到最后一根k线上
+        ------------------------------------------------------------------ 
+        Args:
+            high (pd.Series): 最高价序列,index类型必须为pd.DatetimeIndex
+            low (pd.Series): 最低价序列,index类型必须为pd.DatetimeIndex
+        Returns:
+            Tuple[pd.Series, pd.Series]: 合并后的最大值和最小值序列
+        """
+
+        # 循环序列开始合并K线
+        pointer = 1
+        while pointer < len(high)-2:
+
+            if high[pointer] < high[pointer + 1] and low[pointer] < low[pointer + 1]:
+                if high[pointer + 1] >= high[pointer + 2] and low[pointer + 1] <= low[pointer + 2]:
+                    self._upward_trend(high, low, pointer+1, method='last')
+                    continue
+                elif high[pointer + 1] <= high[pointer + 2] and low[pointer + 1] >= low[pointer + 2]:
+                    if low[pointer] >= low[pointer + 2] and high[pointer - 1] > high[pointer] and low[pointer - 1] > low[pointer]:
+                        self._downward_trend(
+                            high, low, pointer+1, method='last')
+                        pointer -= 1
+                        continue
+                    else:
+                        self._upward_trend(high, low, pointer+1, method='last')
+                        continue
+            elif high[pointer] > high[pointer + 1] and low[pointer] > low[pointer + 1]:
+                if high[pointer + 1] >= high[pointer + 2] and low[pointer + 1] <= low[pointer + 2]:
+                    self._downward_trend(high, low, pointer+1, method='last')
+                    continue
+                elif high[pointer + 1] <= high[pointer + 2] and low[pointer + 1] >= low[pointer + 2]:
+                    if high[pointer] <= high[pointer + 2] and high[pointer - 1] < high[pointer] and low[pointer - 1] < low[pointer]:
+                        self._upward_trend(high, low, pointer+1, method='last')
+                        pointer -= 1
+                        continue
+                    else:
+                        self._downward_trend(
+                            high, low, pointer+1, method='last')
+                        continue
+            pointer += 1
+        return high, low
